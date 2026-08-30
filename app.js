@@ -279,13 +279,18 @@ async function playConfiguredMusic() {
       `;
     }
 
-    // 1. Live Countdown ticker on button
+    // 1. Live Countdown ticker on button and floating mobile player
+    const mobTicker = document.getElementById('mobile-sound-live-sec');
+    const mobBtn = document.getElementById('mobile-sound-text');
+    if (mobTicker) mobTicker.innerText = remainingSec;
+    if (mobBtn) mobBtn.innerText = 'Pause';
+
     musicCountdownInterval = setInterval(() => {
       remainingSec--;
       const liveSecEl = document.getElementById('sound-live-sec');
-      if (liveSecEl && remainingSec >= 0) {
-        liveSecEl.innerText = remainingSec;
-      }
+      const liveMobSecEl = document.getElementById('mobile-sound-live-sec');
+      if (liveSecEl && remainingSec >= 0) liveSecEl.innerText = remainingSec;
+      if (liveMobSecEl && remainingSec >= 0) liveMobSecEl.innerText = remainingSec;
     }, 1000);
 
     // 2. Smooth Fade-Out trigger
@@ -320,6 +325,8 @@ async function playConfiguredMusic() {
 function stopMusic() {
   const bgAudio = document.getElementById('bg-audio');
   const btn = document.getElementById('btn-sound-toggle');
+  const mobTicker = document.getElementById('mobile-sound-live-sec');
+  const mobBtn = document.getElementById('mobile-sound-text');
 
   stopMusicTimers();
 
@@ -329,6 +336,9 @@ function stopMusic() {
   }
 
   isPlayingAudio = false;
+  if (mobTicker) mobTicker.innerText = MUSIC_CONFIG.playDurationSec;
+  if (mobBtn) mobBtn.innerText = 'Play';
+
   if (btn) {
     btn.classList.remove('border-amber-400', 'bg-amber-500/30', 'ring-2', 'ring-amber-400/40');
     btn.innerHTML = `

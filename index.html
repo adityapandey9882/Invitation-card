@@ -215,7 +215,13 @@
 
       <!-- Auspicious Top Header / Welcome -->
       <div class="text-center relative z-10 mb-2">
-        <div class="inline-flex items-center justify-center gap-2">
+        <!-- Live Audio Badge Indicator -->
+        <div class="mb-2 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-400/40 text-amber-300 text-[11px] font-semibold shadow-sm">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span>🎵 Inauguration Celebration Music Active</span>
+        </div>
+
+        <div class="inline-flex items-center justify-center gap-2 w-full">
           <div class="h-[1px] w-8 sm:w-12 bg-gradient-to-r from-transparent to-amber-400"></div>
           <span class="text-amber-300 font-cinzel text-[10px] sm:text-xs tracking-[0.2em] uppercase font-bold" id="card-sub-header">GRAND INAUGURATION & CELEBRATION</span>
           <div class="h-[1px] w-8 sm:w-12 bg-gradient-to-l from-transparent to-amber-400"></div>
@@ -625,6 +631,25 @@
         </div>
       </form>
     </div>
+  </div>
+
+  <!-- Floating Mobile / Tablet Active Music Player Pill (Visible on All Devices) -->
+  <div id="mobile-floating-music-bar" class="no-print fixed bottom-4 left-1/2 -translate-x-1/2 z-40 px-4 py-2 rounded-full bg-slate-950/90 border border-amber-400/60 shadow-2xl gold-shadow flex items-center gap-3 backdrop-blur-xl transition-all max-w-[94vw] w-auto">
+    <div class="music-wave">
+      <span class="music-wave-bar"></span>
+      <span class="music-wave-bar"></span>
+      <span class="music-wave-bar"></span>
+      <span class="music-wave-bar"></span>
+      <span class="music-wave-bar"></span>
+    </div>
+    <div class="flex items-center gap-2">
+      <span class="text-xs font-bold text-amber-200">🎵 Music:</span>
+      <span class="text-xs text-amber-300 font-mono font-bold"><span id="mobile-sound-live-sec">15</span>s</span>
+    </div>
+    <button onclick="toggleAudio()" class="px-2.5 py-1 rounded-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-[11px] flex items-center gap-1 shadow-md">
+      <i data-lucide="volume-2" id="mobile-sound-icon" class="w-3 h-3"></i>
+      <span id="mobile-sound-text">Play</span>
+    </button>
   </div>
 
   <!-- RSVP Confirmation Toast -->
