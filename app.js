@@ -28,6 +28,18 @@ document.addEventListener('DOMContentLoaded', async () => {
   applyDivinePoojaTheme();
   syncMusicConfigUI();
   setupSecretAdminShortcut();
+
+  // Seamless Mobile Touch Unlock
+  const envelopeOverlay = document.getElementById('envelope-overlay');
+  if (envelopeOverlay) {
+    envelopeOverlay.addEventListener('touchstart', () => {
+      const bgAudio = document.getElementById('bg-audio');
+      if (bgAudio && bgAudio.paused && !isPlayingAudio) {
+        // Pre-warm audio on mobile
+        bgAudio.load();
+      }
+    }, { passive: true, once: true });
+  }
 });
 
 // 🕉️ Divine Pooja Background Theme Controller
