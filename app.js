@@ -74,17 +74,21 @@ function applyHeaderButtonVisibility() {
   const printBtn = document.getElementById('btn-header-print');
   const musicBtn = document.getElementById('btn-sound-toggle');
 
-  if (adminBtn && showAdmin !== null) {
-    adminBtn.classList.toggle('hidden', showAdmin === 'false');
+  if (adminBtn) {
+    if (showAdmin === 'false') adminBtn.style.display = 'none';
+    else adminBtn.style.display = '';
   }
-  if (customBtn && showCustomize !== null) {
-    customBtn.classList.toggle('hidden', showCustomize === 'false');
+  if (customBtn) {
+    if (showCustomize === 'false') customBtn.style.display = 'none';
+    else customBtn.style.display = '';
   }
-  if (printBtn && showPrint !== null) {
-    printBtn.classList.toggle('hidden', showPrint === 'false');
+  if (printBtn) {
+    if (showPrint === 'false') printBtn.style.display = 'none';
+    else printBtn.style.display = '';
   }
-  if (musicBtn && showMusic !== null) {
-    musicBtn.classList.toggle('hidden', showMusic === 'false');
+  if (musicBtn) {
+    if (showMusic === 'false') musicBtn.style.display = 'none';
+    else musicBtn.style.display = '';
   }
 }
 
@@ -337,11 +341,9 @@ function openEnvelope() {
   // Confetti Blast
   celebrateConfetti();
 
-  // Auto-play music if enabled
+  // Auto-play music immediately inside user gesture context for 100% Mobile Phone compatibility
   if (MUSIC_CONFIG.autoPlayOnOpen) {
-    setTimeout(() => {
-      playConfiguredMusic();
-    }, 400);
+    playConfiguredMusic();
   }
 
   setTimeout(() => {
