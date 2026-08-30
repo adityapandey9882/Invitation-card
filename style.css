@@ -1,0 +1,213 @@
+/* Custom Luxury Styles & Animations */
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Great+Vibes&display=swap');
+
+:root {
+  --gold-primary: #d4af37;
+  --gold-light: #fef08a;
+  --gold-dark: #996515;
+  --gold-glow: rgba(212, 175, 55, 0.4);
+}
+
+.font-cinzel {
+  font-family: 'Cinzel', serif;
+}
+
+.font-playfair {
+  font-family: 'Playfair Display', serif;
+}
+
+.font-script {
+  font-family: 'Great Vibes', cursive;
+}
+
+.font-sans-modern {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+/* Gold Gradient Texts */
+.text-gold-gradient {
+  background: linear-gradient(135deg, #fff2b2 0%, #d4af37 40%, #aa7c11 75%, #ffd700 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gold-shimmer {
+  background: linear-gradient(90deg, #d4af37 0%, #fff7cc 50%, #d4af37 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shine 4s linear infinite;
+}
+
+/* Gold Borders & Accents */
+.border-gold-gradient {
+  border-image: linear-gradient(to bottom right, #fef08a, #d4af37, #996515, #fef08a) 1;
+}
+
+.gold-shadow {
+  box-shadow: 0 10px 40px -10px rgba(212, 175, 55, 0.25), 0 0 20px -5px rgba(212, 175, 55, 0.15);
+}
+
+.gold-glow-hover:hover {
+  box-shadow: 0 0 30px rgba(212, 175, 55, 0.45);
+}
+
+/* Background Luxury Glows */
+.bg-radial-luxury {
+  background: radial-gradient(circle at 50% 0%, rgba(212, 175, 55, 0.15) 0%, transparent 60%),
+              radial-gradient(circle at 100% 100%, rgba(26, 54, 93, 0.4) 0%, transparent 50%),
+              radial-gradient(circle at 0% 100%, rgba(15, 23, 42, 0.9) 0%, transparent 50%),
+              #070b19;
+}
+
+/* Animated Music Equalizer Wave */
+.music-wave {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 14px;
+}
+
+.music-wave-bar {
+  width: 2.5px;
+  background: linear-gradient(to top, #d97706, #fbbf24, #fef08a);
+  border-radius: 2px;
+  animation: soundWaveBar 0.9s ease-in-out infinite alternate;
+}
+
+.music-wave-bar:nth-child(1) { height: 5px; animation-delay: 0.1s; }
+.music-wave-bar:nth-child(2) { height: 13px; animation-delay: 0.35s; }
+.music-wave-bar:nth-child(3) { height: 8px; animation-delay: 0.15s; }
+.music-wave-bar:nth-child(4) { height: 14px; animation-delay: 0.45s; }
+.music-wave-bar:nth-child(5) { height: 6px; animation-delay: 0.25s; }
+
+@keyframes soundWaveBar {
+  0% { height: 3px; transform: scaleY(0.3); opacity: 0.6; }
+  50% { height: 14px; transform: scaleY(1); opacity: 1; }
+  100% { height: 4px; transform: scaleY(0.4); opacity: 0.7; }
+}
+
+/* Shimmer Animation */
+@keyframes shine {
+  to {
+    background-position: 200% center;
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.05);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 4s ease-in-out infinite;
+}
+
+@keyframes floatGentle {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.animate-float {
+  animation: floatGentle 5s ease-in-out infinite;
+}
+
+/* 🕉️ Divine Pooja & Shubh Auspicious Background Styles */
+.pooja-bg-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 0.8s ease-in-out;
+}
+
+.pooja-bg-layer.active {
+  opacity: 1;
+}
+
+.divine-mandala {
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(212, 175, 55, 0.08) 0%, rgba(217, 119, 6, 0.04) 50%, transparent 70%);
+  border: 1px dashed rgba(212, 175, 55, 0.15);
+  animation: rotateSlow 60s linear infinite;
+}
+
+.divine-diya-glow {
+  animation: diyaFlicker 3s ease-in-out infinite alternate;
+}
+
+@keyframes rotateSlow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes diyaFlicker {
+  0% { transform: scale(0.95); opacity: 0.6; filter: drop-shadow(0 0 10px rgba(245, 158, 11, 0.5)); }
+  50% { transform: scale(1.08); opacity: 0.95; filter: drop-shadow(0 0 25px rgba(251, 191, 36, 0.8)); }
+  100% { transform: scale(0.98); opacity: 0.7; filter: drop-shadow(0 0 15px rgba(245, 158, 11, 0.6)); }
+}
+
+@keyframes floatParticle {
+  0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+  20% { opacity: 0.8; }
+  80% { opacity: 0.8; }
+  100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+}
+
+.floating-blessing-item {
+  position: absolute;
+  animation: floatParticle linear infinite;
+}
+
+/* Printable Styles */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    padding: 0 !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  #invitation-card {
+    box-shadow: none !important;
+    background: #0d1527 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    margin: 0 auto !important;
+    width: 100% !important;
+    max-width: 800px !important;
+    page-break-inside: avoid !important;
+  }
+}
+
+/* Scrollbar Customization */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #0b1120;
+}
+::-webkit-scrollbar-thumb {
+  background: #2a3854;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #d4af37;
+}

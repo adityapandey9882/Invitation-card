@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard | ZENNEXTVERIFY Invitation Portal</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              dark: '#070b19',
+              navy: '#0d172e',
+              card: '#0f1d3a',
+              border: '#2a3b60',
+              gold: '#d4af37',
+              goldLight: '#fef08a',
+              goldDark: '#996515',
+              accent: '#e6ca65'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800;900&family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-radial-luxury text-slate-100 font-sans-modern min-h-screen flex flex-col selection:bg-amber-500 selection:text-slate-950">
+
+  <!-- Admin Login / PIN Protection Modal -->
+  <div id="login-modal" class="fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-xl flex items-center justify-center p-4">
+    <div class="bg-brand-navy border-2 border-amber-500/40 rounded-2xl max-w-md w-full p-8 gold-shadow text-center relative">
+      <div class="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-400/40 mx-auto flex items-center justify-center mb-4">
+        <i data-lucide="shield-check" class="w-8 h-8 text-amber-400"></i>
+      </div>
+      <h2 class="text-2xl font-cinzel font-bold text-gold-shimmer mb-1">Admin Security Portal</h2>
+      <p class="text-xs text-slate-400 mb-6">Enter Admin PIN to manage music, duration & event details.</p>
+      
+      <div class="space-y-4">
+        <div>
+          <input type="password" id="admin-pin-input" maxlength="6" placeholder="Enter 4-digit PIN" onkeydown="if(event.key==='Enter') checkAdminPin()" class="w-full bg-slate-950 border border-amber-500/40 rounded-xl px-4 py-3 text-center text-xl tracking-[0.5em] text-amber-300 font-mono focus:outline-none focus:border-amber-400">
+          <p id="pin-error-msg" class="text-xs text-red-400 mt-2 hidden">Incorrect PIN. Please enter correct PIN (9792).</p>
+        </div>
+
+        <button onclick="checkAdminPin()" class="w-full py-3 rounded-xl bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 hover:from-amber-300 hover:to-amber-500 text-slate-950 font-bold text-sm shadow-lg shadow-amber-500/20 transition-all flex items-center justify-center gap-2">
+          <i data-lucide="unlock" class="w-4 h-4"></i>
+          <span>Access Admin Dashboard</span>
+        </button>
+
+        <div class="pt-2">
+          <a href="index.html" class="text-xs text-slate-400 hover:text-amber-300 inline-flex items-center gap-1 transition-colors">
+            <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+            <span>Back to Invitation Card</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top Admin Navbar -->
+  <header class="border-b border-amber-500/20 bg-brand-dark/90 backdrop-blur-md sticky top-0 z-30 px-4 sm:px-8 py-3.5 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="h-10 px-2.5 py-1 rounded-xl bg-white/95 border border-amber-400/40 flex items-center justify-center shadow-lg">
+        <img src="logo.png" alt="ZenNextVerify Logo" class="h-7 w-auto object-contain">
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <h1 class="text-sm sm:text-base font-cinzel font-bold text-gold-shimmer">ADMIN DASHBOARD</h1>
+          <span class="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-bold border border-amber-500/30">PORTAL</span>
+        </div>
+        <p class="text-[11px] text-slate-400">ZENNEXTVERIFY Invitation Management</p>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex items-center gap-3">
+      <a href="index.html" target="_blank" class="px-3.5 py-1.5 rounded-lg border border-amber-500/40 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 text-xs sm:text-sm font-semibold flex items-center gap-1.5 transition-all shadow-sm">
+        <i data-lucide="external-link" class="w-4 h-4"></i>
+        <span>Live Card Preview</span>
+      </a>
+
+      <button onclick="lockAdmin()" title="Lock Admin" class="p-2 rounded-lg bg-slate-900 border border-slate-700 hover:border-amber-400/50 text-slate-300 hover:text-amber-300 transition-all">
+        <i data-lucide="lock" class="w-4 h-4"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <main class="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8 flex-1 w-full space-y-6">
+
+    <!-- Status Banner -->
+    <div class="p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 via-brand-navy to-slate-900 border border-amber-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-400/40 flex items-center justify-center shrink-0">
+          <i data-lucide="music-2" class="w-5 h-5 text-amber-400"></i>
+        </div>
+        <div>
+          <h2 class="text-sm sm:text-base font-bold text-slate-100">Music & Event Audio Control</h2>
+          <p class="text-xs text-slate-400">Upload your song and set exact playback seconds. All guests will hear your configured audio.</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span>IndexedDB Storage Active</span>
+        </span>
+      </div>
+    </div>
+
+    <!-- Grid: Multi-Music Upload Library & Playback Trimming Settings -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+      <!-- Left Column: Multi-Audio Upload & Music Library (7 cols) -->
+      <div class="lg:col-span-7 bg-brand-navy/90 border border-amber-500/30 rounded-2xl p-5 sm:p-6 gold-shadow space-y-5">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div class="flex items-center gap-2">
+            <i data-lucide="upload-cloud" class="w-5 h-5 text-amber-400"></i>
+            <h3 class="font-cinzel font-bold text-amber-200 text-base">1. Upload Celebration Music</h3>
+          </div>
+          <span class="text-[11px] text-emerald-400 font-semibold bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/30">All Audio Supported</span>
+        </div>
+
+        <!-- Hidden File Input -->
+        <input type="file" id="audio-file-input" accept="audio/*,*" onchange="handleDirectFileUpload(this.files)" class="hidden">
+
+        <!-- Drag & Drop / Click Box -->
+        <div id="drop-zone" onclick="document.getElementById('audio-file-input').click()" class="border-2 border-dashed border-amber-500/40 hover:border-amber-400 bg-slate-950/60 hover:bg-slate-950/90 rounded-2xl p-6 text-center cursor-pointer transition-all duration-300 group">
+          <div class="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/30 group-hover:scale-110 mx-auto flex items-center justify-center mb-3 transition-transform">
+            <i data-lucide="music" class="w-7 h-7 text-amber-400"></i>
+          </div>
+          <h4 class="text-sm sm:text-base font-bold text-slate-200 group-hover:text-amber-300 transition-colors">Click or Drag & Drop Music File Here</h4>
+          <p class="text-xs text-slate-400 mt-1">Supports WhatsApp Audio, MP3, Devotional Bhajans, OGG, WAV, M4A.</p>
+          <div class="mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 text-xs font-bold shadow-lg transition-all transform hover:scale-105">
+            <i data-lucide="folder-plus" class="w-4 h-4"></i>
+            <span>Browse Audio File</span>
+          </div>
+        </div>
+
+        <!-- Current Active Track Info Card (Prominent View) -->
+        <div id="active-track-box" class="p-4 rounded-xl bg-gradient-to-r from-slate-950 via-brand-navy to-slate-950 border border-amber-500/40 space-y-3 shadow-md">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+              <i data-lucide="disc" class="w-4 h-4 text-amber-400 animate-spin-slow"></i>
+              <span>Active Audio Track (Playing for Guests)</span>
+            </span>
+            <span id="track-source-badge" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">Active</span>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center shrink-0">
+              <i data-lucide="music-2" class="w-5 h-5 text-amber-400"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <h5 id="active-track-name" class="text-sm font-bold text-amber-200 truncate">music.mp3</h5>
+              <p id="active-track-size" class="text-[11px] text-slate-400">Stored & Active in Browser</p>
+            </div>
+            <button onclick="resetToDefaultMusic()" id="btn-remove-audio" title="Reset to default music" class="p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 text-xs transition-colors">
+              <i data-lucide="trash-2" class="w-4 h-4"></i>
+            </button>
+          </div>
+
+          <!-- HTML5 Audio Player -->
+          <audio id="admin-audio" controls class="w-full h-9 rounded-lg bg-slate-900"></audio>
+
+          <!-- Quick Timestamp Grabbers -->
+          <div class="grid grid-cols-2 gap-2 pt-1">
+            <button onclick="setStartFromCurrentAudioTime()" type="button" class="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-amber-500/40 text-amber-300 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all">
+              <i data-lucide="map-pin" class="w-3.5 h-3.5 text-amber-400"></i>
+              <span>Set as Start Point (शुरू)</span>
+            </button>
+            <button onclick="setEndFromCurrentAudioTime()" type="button" class="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-amber-500/40 text-amber-300 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all">
+              <i data-lucide="flag" class="w-3.5 h-3.5 text-amber-400"></i>
+              <span>Set as End Point (खत्म)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Music Library List -->
+        <div class="space-y-2 pt-2 border-t border-slate-800">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-slate-300 flex items-center gap-1.5">
+              <i data-lucide="list-music" class="w-4 h-4 text-amber-400"></i>
+              <span>Uploaded Songs Library</span>
+            </span>
+            <span id="library-count-badge" class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-300 border border-slate-700">1 Track</span>
+          </div>
+          <div id="music-library-list" class="space-y-1.5 max-h-40 overflow-y-auto pr-1"></div>
+        </div>
+      </div>
+
+      <!-- Right Column: Exact Start/End Range & Trimming Controls (5 cols) -->
+      <div class="lg:col-span-5 bg-brand-navy/90 border border-amber-500/30 rounded-2xl p-5 sm:p-6 gold-shadow space-y-5 flex flex-col justify-between">
+        <div class="space-y-4">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+            <div class="flex items-center gap-2">
+              <i data-lucide="scissors" class="w-5 h-5 text-amber-400"></i>
+              <h3 class="font-cinzel font-bold text-amber-200 text-base">2. Set Start & End Seconds</h3>
+            </div>
+            <span class="text-[10px] text-amber-300 font-bold bg-amber-500/20 px-2 py-0.5 rounded border border-amber-500/30">Auto-Trim</span>
+          </div>
+
+          <!-- Range Summary Highlight Box -->
+          <div class="p-3.5 rounded-xl bg-gradient-to-r from-amber-500/20 via-amber-500/10 to-slate-950 border border-amber-400/40 text-center space-y-1">
+            <span class="text-[11px] uppercase tracking-wider text-slate-300 font-semibold block">Song Play Segment (कहाँ से कहाँ तक)</span>
+            <div class="text-base sm:text-lg font-cinzel font-extrabold text-gold-shimmer">
+              From <span id="summary-start-sec" class="text-amber-300 font-mono">0s</span> to <span id="summary-end-sec" class="text-amber-300 font-mono">15s</span>
+            </div>
+            <div class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-400/20 text-amber-200 text-xs font-bold font-mono">
+              <i data-lucide="timer" class="w-3.5 h-3.5 text-amber-400"></i>
+              <span>Total Duration: <span id="summary-total-duration">15</span> Seconds</span>
+            </div>
+          </div>
+
+          <!-- Start Point Control -->
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between">
+              <label class="text-xs font-bold text-slate-200 flex items-center gap-1.5">
+                <i data-lucide="play-circle" class="w-4 h-4 text-emerald-400"></i>
+                <span>1. Start Time (शुरू कहाँ से हो)</span>
+              </label>
+              <div class="flex items-center gap-1">
+                <input type="number" id="input-start-sec" min="0" value="0" oninput="onStartSecInputChange(this.value)" class="w-16 bg-slate-950 border border-slate-700 rounded px-1.5 py-0.5 text-amber-300 font-mono font-bold text-xs text-center focus:outline-none focus:border-amber-400">
+                <span class="text-xs text-slate-400">sec</span>
+              </div>
+            </div>
+            <input type="range" id="admin-start-slider" min="0" max="180" value="0" oninput="onStartSliderChange(this.value)" class="w-full accent-amber-400 cursor-pointer h-2 bg-slate-950 rounded-lg">
+            <p class="text-[10px] text-slate-400">Music will start playing from this exact second.</p>
+          </div>
+
+          <!-- End Point Control -->
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between">
+              <label class="text-xs font-bold text-slate-200 flex items-center gap-1.5">
+                <i data-lucide="stop-circle" class="w-4 h-4 text-rose-400"></i>
+                <span>2. End Time (खत्म कहाँ पर हो)</span>
+              </label>
+              <div class="flex items-center gap-1">
+                <input type="number" id="input-end-sec" min="1" value="15" oninput="onEndSecInputChange(this.value)" class="w-16 bg-slate-950 border border-slate-700 rounded px-1.5 py-0.5 text-amber-300 font-mono font-bold text-xs text-center focus:outline-none focus:border-amber-400">
+                <span class="text-xs text-slate-400">sec</span>
+              </div>
+            </div>
+            <input type="range" id="admin-end-slider" min="1" max="180" value="15" oninput="onEndSliderChange(this.value)" class="w-full accent-amber-400 cursor-pointer h-2 bg-slate-950 rounded-lg">
+            <p class="text-[10px] text-slate-400">Music will automatically stop when it reaches this second.</p>
+          </div>
+
+          <!-- Fade-Out & Auto-Play Toggles -->
+          <div class="space-y-2 pt-1 border-t border-slate-800">
+            <label class="flex items-center justify-between p-2.5 rounded-xl bg-slate-950/70 border border-slate-800 cursor-pointer hover:border-amber-500/30 transition-colors">
+              <div class="flex items-center gap-2">
+                <i data-lucide="volume-1" class="w-4 h-4 text-amber-400"></i>
+                <span class="text-xs font-bold text-slate-200">Smooth Fade-Out (2s before end)</span>
+              </div>
+              <input type="checkbox" id="admin-fade-toggle" checked class="w-4 h-4 accent-amber-500 rounded">
+            </label>
+
+            <label class="flex items-center justify-between p-2.5 rounded-xl bg-slate-950/70 border border-slate-800 cursor-pointer hover:border-amber-500/30 transition-colors">
+              <div class="flex items-center gap-2">
+                <i data-lucide="mail-open" class="w-4 h-4 text-amber-400"></i>
+                <span class="text-xs font-bold text-slate-200">Auto-Play on Envelope Open</span>
+              </div>
+              <input type="checkbox" id="admin-autoplay-toggle" checked class="w-4 h-4 accent-amber-500 rounded">
+            </label>
+          </div>
+        </div>
+
+        <!-- Simulation Test Button -->
+        <div class="pt-2">
+          <button onclick="testTimedPlayback()" id="btn-test-play" class="w-full py-2.5 rounded-xl border border-amber-500/40 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-md">
+            <i data-lucide="play" id="test-play-icon" class="w-4 h-4"></i>
+            <span id="test-play-text">Test Selected Segment (<span id="test-btn-duration">15</span>s)</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. Divine Pooja & Shubh Auspicious Background Theme Controls -->
+    <div class="bg-brand-navy/90 border border-amber-500/30 rounded-2xl p-5 sm:p-6 gold-shadow space-y-5">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2">
+          <span class="text-xl">🪔</span>
+          <h3 class="font-cinzel font-bold text-amber-200 text-base">3. Divine Pooja & Shubh Auspicious Background Theme</h3>
+        </div>
+        <span class="text-xs text-amber-300 font-bold bg-amber-500/20 px-2.5 py-0.5 rounded-full border border-amber-500/40">Vedic & Shubh Theme</span>
+      </div>
+
+      <p class="text-xs text-slate-300">Enable golden glowing Diyas, sacred Shubh-Labh / Swastik watermarks, and floating blessing petals for a spiritual corporate inauguration atmosphere.</p>
+
+      <!-- Main Master Toggle -->
+      <label class="flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-amber-500/20 via-amber-500/10 to-slate-950 border border-amber-400/60 cursor-pointer transition-all shadow-md">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-lg">
+            🕉️
+          </div>
+          <div>
+            <span class="text-sm font-bold text-amber-200 block font-cinzel">Enable Divine Pooja Background (शुभ पूजा थीम)</span>
+            <span class="text-xs text-slate-300">Shows floating Diyas, sacred Shubh-Labh watermarks & divine golden blessing rays</span>
+          </div>
+        </div>
+        <input type="checkbox" id="admin-pooja-bg-toggle" checked class="w-5 h-5 accent-amber-500 rounded cursor-pointer">
+      </label>
+
+      <!-- Sub Elements Customization Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+        <label class="flex items-center justify-between p-3 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-amber-500/40 cursor-pointer transition-colors">
+          <div class="flex items-center gap-2">
+            <span class="text-base">🪔</span>
+            <div>
+              <span class="text-xs font-bold text-slate-200 block">Golden Glowing Diyas</span>
+              <span class="text-[10px] text-slate-400">Pooja deepam flames</span>
+            </div>
+          </div>
+          <input type="checkbox" id="admin-pooja-diyas-toggle" checked class="w-4 h-4 accent-amber-500 rounded cursor-pointer">
+        </label>
+
+        <label class="flex items-center justify-between p-3 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-amber-500/40 cursor-pointer transition-colors">
+          <div class="flex items-center gap-2">
+            <span class="text-base">卐</span>
+            <div>
+              <span class="text-xs font-bold text-slate-200 block">Shubh Labh & Swastik</span>
+              <span class="text-[10px] text-slate-400">Sacred gold motifs</span>
+            </div>
+          </div>
+          <input type="checkbox" id="admin-pooja-shubhlabh-toggle" checked class="w-4 h-4 accent-amber-500 rounded cursor-pointer">
+        </label>
+
+        <label class="flex items-center justify-between p-3 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-amber-500/40 cursor-pointer transition-colors">
+          <div class="flex items-center gap-2">
+            <span class="text-base">🌸</span>
+            <div>
+              <span class="text-xs font-bold text-slate-200 block">Floating Blessings</span>
+              <span class="text-[10px] text-slate-400">Golden flower petals</span>
+            </div>
+          </div>
+          <input type="checkbox" id="admin-pooja-petals-toggle" checked class="w-4 h-4 accent-amber-500 rounded cursor-pointer">
+        </label>
+      </div>
+    </div>
+
+    <!-- 4. Header Buttons Visibility Controls (Guest Privacy) -->
+    <div class="bg-brand-navy/90 border border-amber-500/30 rounded-2xl p-5 sm:p-6 gold-shadow space-y-5">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2">
+          <i data-lucide="eye-off" class="w-5 h-5 text-amber-400"></i>
+          <h3 class="font-cinzel font-bold text-amber-200 text-base">4. Top Header Buttons Visibility (Guest View)</h3>
+        </div>
+        <span class="text-xs text-slate-400">Hide unwanted buttons from guests</span>
+      </div>
+
+      <p class="text-xs text-slate-300">Choose which buttons should be visible on the public invitation card header. Turn OFF to completely hide them from guests.</p>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Toggle Admin Button -->
+        <label class="flex items-center justify-between p-3.5 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-amber-500/40 cursor-pointer transition-colors">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center">
+              <i data-lucide="shield-check" class="w-4 h-4 text-amber-400"></i>
+            </div>
+            <div>
+              <span class="text-xs font-bold text-slate-200 block">Admin Portal</span>
+              <span class="text-[10px] text-slate-400">Hide button from guests</span>
+            </div>
+          </div>
+          <input type="checkbox" id="admin-show-admin-btn" checked class="w-4 h-4 accent-amber-500 rounded cursor-pointer">
+        </label>
+
+        <!-- Toggle Customize Button -->
+        <label class="flex items-center justify-between p-3.5 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-amber-500/40 cursor-pointer transition-colors">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center">
+              <i data-lucide="edit-3" class="w-4 h-4 text-amber-400"></i>
+            </div>
+            <div>
+              <span class="text-xs font-bold text-slate-200 block">Customize Button</span>
+              <span class="text-[10px] text-slate-400">Hide edit panel</span>
+            </div>
+          </div>
+          <input type="checkbox" id="admin-show-customize-btn" checked class="w-4 h-4 accent-amber-500 rounded cursor-pointer">
+        </label>
+
+        <!-- Toggle Print / PDF Button -->
+        <label class="flex items-center justify-between p-3.5 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-amber-500/40 cursor-pointer transition-colors">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center">
+              <i data-lucide="printer" class="w-4 h-4 text-amber-400"></i>
+            </div>
+            <div>
+              <span class="text-xs font-bold text-slate-200 block">Print / PDF</span>
+              <span class="text-[10px] text-slate-400">Hide print button</span>
+            </div>
+          </div>
+          <input type="checkbox" id="admin-show-print-btn" checked class="w-4 h-4 accent-amber-500 rounded cursor-pointer">
+        </label>
+
+        <!-- Toggle Music Button -->
+        <label class="flex items-center justify-between p-3.5 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-amber-500/40 cursor-pointer transition-colors">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center">
+              <i data-lucide="music" class="w-4 h-4 text-amber-400"></i>
+            </div>
+            <div>
+              <span class="text-xs font-bold text-slate-200 block">Music Button</span>
+              <span class="text-[10px] text-slate-400">Hide audio button</span>
+            </div>
+          </div>
+          <input type="checkbox" id="admin-show-music-btn" checked class="w-4 h-4 accent-amber-500 rounded cursor-pointer">
+        </label>
+      </div>
+
+      <div class="p-3 rounded-lg bg-slate-950/60 border border-amber-500/20 text-[11px] text-slate-400 flex items-center gap-2">
+        <i data-lucide="key" class="w-4 h-4 text-amber-400 shrink-0"></i>
+        <span><strong>Admin Secret Tip:</strong> If you hide the "Admin Portal" button, you can still open the admin dashboard anytime by visiting <code class="text-amber-300 font-mono">admin.html</code> directly or double-clicking the logo on the invitation card!</span>
+      </div>
+    </div>
+
+    <!-- Bottom Action Bar: Save / Publish -->
+    <div class="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-2xl bg-brand-dark/80 border border-amber-500/30">
+      <div class="flex items-center gap-2 text-xs text-slate-400">
+        <i data-lucide="info" class="w-4 h-4 text-amber-400"></i>
+        <span>Changes will be instantly available on the invitation card without needing a server restart.</span>
+      </div>
+
+      <div class="flex items-center gap-3 w-full sm:w-auto">
+        <a href="index.html" class="flex-1 sm:flex-none text-center px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition-all">
+          Discard
+        </a>
+        <button onclick="saveAdminSettings()" class="flex-1 sm:flex-none px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 hover:from-amber-300 hover:to-amber-500 text-slate-950 font-bold text-xs sm:text-sm shadow-lg shadow-amber-500/20 transition-all flex items-center justify-center gap-2">
+          <i data-lucide="check-circle" class="w-4 h-4"></i>
+          <span>Save & Publish Changes</span>
+        </button>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Notification Toast -->
+  <div id="toast" class="fixed bottom-6 right-6 z-50 bg-brand-navy border border-amber-500/40 text-slate-100 px-4 py-3 rounded-xl gold-shadow transform translate-y-24 opacity-0 transition-all duration-300 flex items-center gap-3">
+    <i data-lucide="check-circle-2" class="w-5 h-5 text-amber-400"></i>
+    <div>
+      <h4 id="toast-title" class="text-xs font-bold text-amber-300">Saved</h4>
+      <p id="toast-msg" class="text-[11px] text-slate-300">Changes published successfully.</p>
+    </div>
+  </div>
+
+  <!-- IndexedDB Storage Helper & Admin Script -->
+  <script src="admin.js"></script>
+</body>
+</html>
