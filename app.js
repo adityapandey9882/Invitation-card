@@ -425,10 +425,8 @@ function startCountdown() {
   if (savedTarget) {
     targetDate = new Date(savedTarget);
   } else {
-    // Default fallback: 25 days ahead at 10:30 AM
-    targetDate = new Date();
-    targetDate.setDate(targetDate.getDate() + 25);
-    targetDate.setHours(10, 30, 0, 0);
+    // Default fallback: Friday, September 4, 2026 at 10:30 AM
+    targetDate = new Date('2026-09-04T10:30:00');
   }
 
   // Populate datetime-local input in customizer
