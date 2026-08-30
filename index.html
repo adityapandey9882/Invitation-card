@@ -148,11 +148,11 @@
   </header>
 
   <!-- Interactive 3D Envelope Opening Overlay (First Impression Screen) -->
-  <div id="envelope-overlay" class="no-print fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-xl flex flex-col items-center justify-center p-4 transition-all duration-700">
-    <div class="text-center mb-8 max-w-md animate-float">
+  <div id="envelope-overlay" onclick="openEnvelope(event)" class="no-print fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-xl flex flex-col items-center justify-center p-4 transition-all duration-700 cursor-pointer">
+    <div class="text-center mb-8 max-w-md animate-float pointer-events-none">
       <span class="inline-block text-xs uppercase tracking-[0.3em] text-amber-400 font-semibold mb-2">Exclusive Invitation</span>
       <h2 class="text-2xl sm:text-3xl font-cinzel font-bold text-gold-shimmer">Grand Office Opening</h2>
-      <p class="text-slate-300 text-xs sm:text-sm mt-1">Tap the gold seal below to open your personalized invitation</p>
+      <p class="text-slate-300 text-xs sm:text-sm mt-1">Tap anywhere or the gold seal to open your personalized invitation</p>
     </div>
 
     <!-- 3D Luxury Envelope Card -->

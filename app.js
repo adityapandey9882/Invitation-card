@@ -86,13 +86,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   syncMusicConfigUI();
   setupSecretAdminShortcut();
 
-  // Mobile Envelope Touch Listener for Instant iOS Reaction
+  // Envelope click listeners
   const envelopeBtn = document.getElementById('envelope-card-btn');
+  const envelopeOverlay = document.getElementById('envelope-overlay');
   if (envelopeBtn) {
-    envelopeBtn.addEventListener('touchend', (e) => {
-      e.preventDefault();
-      openEnvelope(e);
-    }, { passive: false });
+    envelopeBtn.addEventListener('click', (e) => openEnvelope(e));
+  }
+  if (envelopeOverlay) {
+    envelopeOverlay.addEventListener('click', (e) => openEnvelope(e));
   }
 
   // Error listener on bgAudio to automatically fall back to Web Audio Synth
@@ -475,7 +476,73 @@ function stopSynthMelody() {
   }
 }
 
+// Stop Music and reset button
+function stopMusic() {
+  const bgAudio = document.getElementById('bg-audio');
+  const btn = document.getElementById('btn-sound-toggle');
+  const mobTicker = document.getElementById('mobile-sound-live-sec');
+  const mobBtn = document.getElementById('mobile-sound-text');
 
+  stopMusicTimers();
+  stopSynthMelody();
+
+  if (bgAudio) {
+    bgAudio.pause();
+    bgAudio.volume = 1.0;
+  }
+
+  isPlayingAudio = false;
+  if (mobTicker) mobTicker.innerText = MUSIC_CONFIG.playDurationSec;
+  if (mobBtn) mobBtn.innerText = 'Play';
+
+  if (btn) {
+    btn.classList.remove('border-amber-400', 'bg-amber-500/30', 'ring-2', 'ring-amber-400/40');
+    btn.innerHTML = `
+      <i data-lucide="music" id="sound-icon" class="w-4 h-4 text-amber-400"></i>
+      <span id="sound-btn-text" class="font-semibold">Music (<span id="sound-duration-badge">${MUSIC_CONFIG.playDurationSec}</span>s)</span>
+    `;
+    if (window.lucide) lucide.createIcons();
+  }
+}
+
+function stopMusicTimers() {
+  if (musicTimer) { clearTimeout(musicTimer); musicTimer = null; }
+  if (musicCountdownInterval) { clearInterval(musicCountdownInterval); musicCountdownInterval = null; }
+  if (fadeOutInterval) { clearInterval(fadeOutInterval); fadeOutInterval = null; }
+}
+
+let isEnvelopeOpened = false;
+
+// Envelope Opening & Confetti
+function openEnvelope(e) {
+  if (isEnvelopeOpened) return;
+  isEnvelopeOpened = true;
+
+  if (e && e.stopPropagation) {
+    try { e.stopPropagation(); } catch(err){}
+  }
+  unlockAudioSession();
+
+  const overlay = document.getElementById('envelope-overlay');
+  if (overlay) {
+    overlay.classList.add('opacity-0', 'scale-95', 'pointer-events-none');
+    setTimeout(() => {
+      overlay.style.display = 'none';
+    }, 700);
+  }
+  
+  // Confetti Blast
+  celebrateConfetti();
+
+  // Auto-play music immediately inside synchronous user gesture context for iPhone & Android
+  if (MUSIC_CONFIG.autoPlayOnOpen) {
+    try {
+      playConfiguredMusic();
+    } catch(err) {
+      console.warn("Music play error on open:", err);
+    }
+  }
+}
 
 function celebrateConfetti() {
   if (typeof confetti === 'function') {
