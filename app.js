@@ -2,7 +2,7 @@
 // 🎵 MUSIC & DURATION CONFIGURATION (Yahan se settings change kar sakte hain)
 // =========================================================================
 const MUSIC_CONFIG = {
-  audioFile: "music.mp3",       // File name ya audio link (e.g. "music.mp3", "song.mp3")
+  audioFile: "music.ogg",       // File name ya audio link (e.g. "music.ogg", "music.mp3")
   playDurationSec: 15,          // ⏱️ Kitne SECOND tak chalana hai (e.g. 10, 15, 20, 30, 60)
   startOffsetSec: 0,            // ⏩ Song ko kitne second se shuru karna hai (e.g. 0)
   autoPlayOnOpen: true,         // ✉️ Envelope open hote hi play kare ya nahi (true / false)

@@ -311,7 +311,7 @@ function selectLibraryTrack(index) {
 
 // Reset to Default Music
 async function resetToDefaultMusic() {
-  if (!confirm("Reset to default music.mp3?")) return;
+  if (!confirm("Reset to default music.ogg?")) return;
   
   localStorage.removeItem('saved_audio_base64');
   localStorage.removeItem('saved_audio_name');
@@ -334,13 +334,13 @@ async function resetToDefaultMusic() {
   renderLibraryUI();
 
   const audioEl = document.getElementById('admin-audio');
-  audioEl.src = 'music.mp3';
-  document.getElementById('active-track-name').innerText = 'music.mp3';
+  audioEl.src = 'music.ogg';
+  document.getElementById('active-track-name').innerText = 'music.ogg';
   document.getElementById('active-track-size').innerText = 'Default Celebration Music';
   document.getElementById('track-source-badge').innerText = 'Default';
   document.getElementById('track-source-badge').className = 'px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40';
 
-  showToast("Reset Done", "Reverted to default music.mp3.");
+  showToast("Reset Done", "Reverted to default music.ogg.");
 }
 
 // 4. Time Trimming & Audio Range Controls ("Kaha se Kaha tak")
