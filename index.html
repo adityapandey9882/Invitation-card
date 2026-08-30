@@ -124,9 +124,9 @@
         <span id="sound-btn-text" class="font-semibold">Music (<span id="sound-duration-badge">15</span>s)</span>
       </button>
 
-      <!-- Audio Element -->
-      <audio id="bg-audio" preload="auto">
-        <source src="music.mp3" type="audio/mp3">
+      <!-- Audio Element (iOS Safari Optimized) -->
+      <audio id="bg-audio" preload="auto" playsinline webkit-playsinline src="music.mp3">
+        <source src="music.mp3" type="audio/mpeg">
       </audio>
 
       <button id="btn-header-customize" onclick="toggleEditor()" class="px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg border border-amber-500/40 bg-gradient-to-r from-amber-500/20 to-amber-700/20 hover:from-amber-500/30 hover:to-amber-700/30 text-amber-200 text-[11px] sm:text-xs font-medium flex items-center gap-1 shadow-sm transition-all">
@@ -156,7 +156,7 @@
     </div>
 
     <!-- 3D Luxury Envelope Card -->
-    <div onclick="openEnvelope()" class="cursor-pointer group relative w-72 sm:w-96 h-48 sm:h-60 bg-gradient-to-b from-slate-900 via-brand-navy to-slate-950 rounded-2xl border-2 border-amber-500/40 gold-shadow flex items-center justify-center p-6 transition-all duration-500 hover:scale-105 hover:border-amber-400">
+    <div id="envelope-card-btn" role="button" tabindex="0" onclick="openEnvelope(event)" class="cursor-pointer group relative w-72 sm:w-96 h-48 sm:h-60 bg-gradient-to-b from-slate-900 via-brand-navy to-slate-950 rounded-2xl border-2 border-amber-500/40 gold-shadow flex items-center justify-center p-6 transition-all duration-500 hover:scale-105 hover:border-amber-400 select-none">
       
       <!-- Envelope Pattern Details -->
       <div class="absolute inset-2 border border-amber-500/20 rounded-xl pointer-events-none"></div>
@@ -281,7 +281,7 @@
           </div>
           <span class="text-[10px] font-semibold tracking-widest uppercase text-amber-400">Venue</span>
           <h4 id="card-venue-title" class="text-sm sm:text-base font-cinzel font-bold text-white mt-0.5">Nexus Tower, 7th Floor</h4>
-          <p id="card-venue-address" class="text-[10px] text-slate-400 line-clamp-1">Cyber City, Financial District, Phase II, Hyderabad - 500081</p>
+          <p id="card-venue-address" class="text-[10px] text-slate-300 leading-tight line-clamp-2 mt-0.5">C1-B-GH-01, Greater Noida West, Gaur City 1, Sector 4, Greater Noida, Ghaziabad, Uttar Pradesh 201318</p>
         </div>
       </div>
 
@@ -483,7 +483,7 @@
 
       <div>
         <label class="block text-slate-300 font-medium mb-1">Full Venue Address</label>
-        <textarea id="input-venue-address" rows="2" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 focus:outline-none focus:border-amber-400">Cyber City, Financial District, Phase II, Hyderabad - 500081</textarea>
+        <textarea id="input-venue-address" rows="2" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 focus:outline-none focus:border-amber-400">C1-B-GH-01, Greater Noida West, Gaur City 1, Sector 4, Greater Noida, Ghaziabad, Uttar Pradesh 201318</textarea>
       </div>
 
       <div>

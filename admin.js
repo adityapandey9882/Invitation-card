@@ -115,7 +115,7 @@ async function persistBlobToStorage(blob, fileName) {
       const tx = db.transaction([STORE_SETTINGS], 'readwrite');
       const store = tx.objectStore(STORE_SETTINGS);
       if (arrayBuffer) store.put(arrayBuffer, 'uploaded_music_buffer');
-      store.put(blob.type || 'audio/ogg', 'uploaded_music_type');
+      store.put(blob.type || 'audio/mpeg', 'uploaded_music_type');
       store.put(blob, 'uploaded_music_blob');
       store.put(fileName, 'music_file_name');
 
@@ -143,7 +143,7 @@ async function getPersistedAudio() {
       tx.oncomplete = () => {
         let finalBlob = blobReq.result;
         if (!finalBlob && bufferReq.result) {
-          finalBlob = new Blob([bufferReq.result], { type: typeReq.result || 'audio/ogg' });
+          finalBlob = new Blob([bufferReq.result], { type: typeReq.result || 'audio/mpeg' });
         }
         const name = nameReq.result || localStorage.getItem('saved_audio_name');
         if (finalBlob) {

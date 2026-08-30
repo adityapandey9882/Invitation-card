@@ -15,6 +15,51 @@ let musicTimer = null;
 let musicCountdownInterval = null;
 let fadeOutInterval = null;
 let uploadedAudioBlobUrl = null;
+let webAudioCtx = null;
+let synthOscillators = [];
+let synthGain = null;
+let isAudioUnlocked = false;
+
+// 🍎 iOS Safari & Mobile Audio Unlock Engine
+function unlockAudioSession() {
+  if (isAudioUnlocked) return;
+
+  // 1. Prime Web Audio API AudioContext
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (AudioCtx) {
+      if (!webAudioCtx) {
+        webAudioCtx = new AudioCtx();
+      }
+      if (webAudioCtx.state === 'suspended') {
+        webAudioCtx.resume();
+      }
+      // Play a microscopic silent buffer to awaken iOS CoreAudio hardware
+      const buffer = webAudioCtx.createBuffer(1, 1, 22050);
+      const source = webAudioCtx.createBufferSource();
+      source.buffer = buffer;
+      source.connect(webAudioCtx.destination);
+      source.start(0);
+    }
+  } catch (e) {
+    console.log("WebAudio unlock session:", e);
+  }
+
+  // 2. Prime HTML5 <audio> element
+  const bgAudio = document.getElementById('bg-audio');
+  if (bgAudio) {
+    if (!bgAudio.src || bgAudio.src === window.location.href || bgAudio.src.endsWith('undefined')) {
+      bgAudio.src = uploadedAudioBlobUrl || localStorage.getItem('saved_audio_base64') || MUSIC_CONFIG.audioFile;
+    }
+  }
+
+  isAudioUnlocked = true;
+}
+
+// Global user touch/click listeners to pre-warm audio context
+['touchstart', 'touchend', 'pointerdown', 'mousedown', 'keydown'].forEach(evtType => {
+  window.addEventListener(evtType, unlockAudioSession, { passive: true, once: false });
+});
 
 // Initialize Lucide Icons & App
 document.addEventListener('DOMContentLoaded', async () => {
@@ -23,22 +68,42 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
   startCountdown();
   loadSavedCustomizations();
+  
+  // Fast synchronous audio setup from LocalStorage
+  const savedBase64 = localStorage.getItem('saved_audio_base64');
+  const bgAudio = document.getElementById('bg-audio');
+  if (savedBase64 && bgAudio) {
+    uploadedAudioBlobUrl = savedBase64;
+    bgAudio.src = savedBase64;
+  } else if (bgAudio) {
+    bgAudio.src = MUSIC_CONFIG.audioFile;
+  }
+
+  // Background IndexedDB Check
   await loadAdminUploadedAudioFromDB();
   applyHeaderButtonVisibility();
   applyDivinePoojaTheme();
   syncMusicConfigUI();
   setupSecretAdminShortcut();
 
-  // Seamless Mobile Touch Unlock
-  const envelopeOverlay = document.getElementById('envelope-overlay');
-  if (envelopeOverlay) {
-    envelopeOverlay.addEventListener('touchstart', () => {
-      const bgAudio = document.getElementById('bg-audio');
-      if (bgAudio && bgAudio.paused && !isPlayingAudio) {
-        // Pre-warm audio on mobile
-        bgAudio.load();
+  // Mobile Envelope Touch Listener for Instant iOS Reaction
+  const envelopeBtn = document.getElementById('envelope-card-btn');
+  if (envelopeBtn) {
+    envelopeBtn.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      openEnvelope(e);
+    }, { passive: false });
+  }
+
+  // Error listener on bgAudio to automatically fall back to Web Audio Synth
+  if (bgAudio) {
+    bgAudio.addEventListener('error', () => {
+      console.warn("Audio element error, will use Web Audio Synth fallback.");
+      if (isPlayingAudio) {
+        stopMusic();
+        playAuspiciousSynthMelody(MUSIC_CONFIG.playDurationSec);
       }
-    }, { passive: true, once: true });
+    });
   }
 });
 
@@ -134,7 +199,6 @@ function loadAdminUploadedAudioFromDB() {
       const bgAudio = document.getElementById('bg-audio');
       if (bgAudio) {
         bgAudio.src = savedBase64;
-        bgAudio.load();
       }
       const uploadLabel = document.getElementById('uploaded-file-label');
       if (uploadLabel) {
@@ -143,7 +207,7 @@ function loadAdminUploadedAudioFromDB() {
       return resolve(savedBase64);
     }
 
-    // Priority 2: IndexedDB
+    // Priority 2: IndexedDB (Safe iOS MIME Types)
     try {
       const request = indexedDB.open('ZenNextInvitationDB', 3);
       request.onsuccess = (e) => {
@@ -159,7 +223,7 @@ function loadAdminUploadedAudioFromDB() {
         transaction.oncomplete = () => {
           let finalBlob = blobReq.result;
           if (!finalBlob && bufferReq.result) {
-            finalBlob = new Blob([bufferReq.result], { type: typeReq.result || 'audio/ogg' });
+            finalBlob = new Blob([bufferReq.result], { type: typeReq.result || 'audio/mpeg' });
           }
 
           if (finalBlob) {
@@ -168,7 +232,6 @@ function loadAdminUploadedAudioFromDB() {
             const bgAudio = document.getElementById('bg-audio');
             if (bgAudio) {
               bgAudio.src = uploadedAudioBlobUrl;
-              bgAudio.load();
             }
             const uploadLabel = document.getElementById('uploaded-file-label');
             if (uploadLabel) {
@@ -206,7 +269,7 @@ function handleMusicUpload(e) {
   const file = e.target.files[0];
   if (!file) return;
 
-  if (uploadedAudioBlobUrl) {
+  if (uploadedAudioBlobUrl && !uploadedAudioBlobUrl.startsWith('data:')) {
     URL.revokeObjectURL(uploadedAudioBlobUrl);
   }
   uploadedAudioBlobUrl = URL.createObjectURL(file);
@@ -214,7 +277,6 @@ function handleMusicUpload(e) {
   const bgAudio = document.getElementById('bg-audio');
   if (bgAudio) {
     bgAudio.src = uploadedAudioBlobUrl;
-    bgAudio.load();
   }
 
   document.getElementById('uploaded-file-label').innerHTML = `Selected: <span class="text-amber-300 font-semibold">${file.name}</span>`;
@@ -223,6 +285,7 @@ function handleMusicUpload(e) {
 
 // Toggle Audio Play / Pause
 function toggleAudio() {
+  unlockAudioSession();
   if (!isPlayingAudio) {
     playConfiguredMusic();
   } else {
@@ -231,147 +294,188 @@ function toggleAudio() {
   }
 }
 
-// Play Music for exact configured seconds
-async function playConfiguredMusic() {
+// Play Music for exact configured seconds (100% iOS Safari & All Devices Bulletproof)
+function playConfiguredMusic() {
+  unlockAudioSession();
   const bgAudio = document.getElementById('bg-audio');
-  const btn = document.getElementById('btn-sound-toggle');
-
   if (!bgAudio) return;
 
   // Clear previous timers
   stopMusicTimers();
 
-  // If audio URL not loaded yet, fetch from IndexedDB
-  if (!uploadedAudioBlobUrl && !bgAudio.src) {
-    await loadAdminUploadedAudioFromDB();
+  // Ensure valid source
+  if (!bgAudio.src || bgAudio.src === window.location.href || bgAudio.src.endsWith('undefined')) {
+    bgAudio.src = uploadedAudioBlobUrl || localStorage.getItem('saved_audio_base64') || MUSIC_CONFIG.audioFile;
   }
 
-  if (uploadedAudioBlobUrl) {
-    bgAudio.src = uploadedAudioBlobUrl;
-  } else if (!bgAudio.src || bgAudio.src.endsWith('undefined') || bgAudio.src === window.location.href) {
-    bgAudio.src = MUSIC_CONFIG.audioFile;
+  // Safe currentTime setting for iOS WebKit
+  const startOffset = MUSIC_CONFIG.startOffsetSec || 0;
+  if (startOffset > 0) {
+    if (bgAudio.readyState >= 1) {
+      try { bgAudio.currentTime = startOffset; } catch(e){}
+    } else {
+      bgAudio.addEventListener('loadedmetadata', function onMeta() {
+        try { bgAudio.currentTime = startOffset; } catch(e){}
+      }, { once: true });
+    }
   }
-
-  try {
-    bgAudio.currentTime = MUSIC_CONFIG.startOffsetSec || 0;
-  } catch(e){}
 
   bgAudio.volume = 1.0;
 
-  try {
-    await bgAudio.play();
+  // SYNCHRONOUS play() execution in direct user gesture context for iPhone / iPad
+  const playPromise = bgAudio.play();
+
+  if (playPromise !== undefined) {
+    playPromise.then(() => {
+      isPlayingAudio = true;
+      startMusicPlaybackUI(MUSIC_CONFIG.playDurationSec);
+    }).catch(err => {
+      console.warn("HTML5 audio playback blocked/errored on this device:", err);
+      // Seamlessly fall back to Web Audio Chime Synth so iPhone ALWAYS has sound
+      playAuspiciousSynthMelody(MUSIC_CONFIG.playDurationSec);
+    });
+  } else {
     isPlayingAudio = true;
-    if (btn) btn.classList.add('border-amber-400', 'bg-amber-500/30', 'ring-2', 'ring-amber-400/40');
-    
-    let remainingSec = MUSIC_CONFIG.playDurationSec;
-    
-    // Render animated bouncing music wave bars
-    if (btn) {
-      btn.innerHTML = `
-        <div class="music-wave mr-1">
-          <span class="music-wave-bar"></span>
-          <span class="music-wave-bar"></span>
-          <span class="music-wave-bar"></span>
-          <span class="music-wave-bar"></span>
-          <span class="music-wave-bar"></span>
-        </div>
-        <span id="sound-btn-text" class="font-semibold">Playing (<span id="sound-live-sec">${remainingSec}</span>s)</span>
-      `;
-    }
-
-    // 1. Live Countdown ticker on button and floating mobile player
-    const mobTicker = document.getElementById('mobile-sound-live-sec');
-    const mobBtn = document.getElementById('mobile-sound-text');
-    if (mobTicker) mobTicker.innerText = remainingSec;
-    if (mobBtn) mobBtn.innerText = 'Pause';
-
-    musicCountdownInterval = setInterval(() => {
-      remainingSec--;
-      const liveSecEl = document.getElementById('sound-live-sec');
-      const liveMobSecEl = document.getElementById('mobile-sound-live-sec');
-      if (liveSecEl && remainingSec >= 0) liveSecEl.innerText = remainingSec;
-      if (liveMobSecEl && remainingSec >= 0) liveMobSecEl.innerText = remainingSec;
-    }, 1000);
-
-    // 2. Smooth Fade-Out trigger
-    const fadeStartTime = Math.max(0, (MUSIC_CONFIG.playDurationSec - MUSIC_CONFIG.fadeOutSec) * 1000);
-    setTimeout(() => {
-      if (!isPlayingAudio) return;
-      let currentVol = 1.0;
-      fadeOutInterval = setInterval(() => {
-        currentVol -= 0.1;
-        if (currentVol <= 0.05) {
-          bgAudio.volume = 0;
-          clearInterval(fadeOutInterval);
-        } else {
-          bgAudio.volume = currentVol;
-        }
-      }, 150);
-    }, fadeStartTime);
-
-    // 3. Exact Auto-Stop Timer
-    musicTimer = setTimeout(() => {
-      stopMusic();
-    }, MUSIC_CONFIG.playDurationSec * 1000);
-
-  } catch (err) {
-    // Silent fail if browser autoplay blocked before user interaction
-    if (btn) btn.classList.remove('border-amber-400', 'bg-amber-500/30', 'ring-2', 'ring-amber-400/40');
-    isPlayingAudio = false;
+    startMusicPlaybackUI(MUSIC_CONFIG.playDurationSec);
   }
 }
 
-// Stop Music and reset button
-function stopMusic() {
-  const bgAudio = document.getElementById('bg-audio');
+// Start visual equalizer and countdown ticker
+function startMusicPlaybackUI(durationSec) {
   const btn = document.getElementById('btn-sound-toggle');
+  if (btn) btn.classList.add('border-amber-400', 'bg-amber-500/30', 'ring-2', 'ring-amber-400/40');
+  
+  let remainingSec = durationSec;
+  
+  if (btn) {
+    btn.innerHTML = `
+      <div class="music-wave mr-1">
+        <span class="music-wave-bar"></span>
+        <span class="music-wave-bar"></span>
+        <span class="music-wave-bar"></span>
+        <span class="music-wave-bar"></span>
+        <span class="music-wave-bar"></span>
+      </div>
+      <span id="sound-btn-text" class="font-semibold">Playing (<span id="sound-live-sec">${remainingSec}</span>s)</span>
+    `;
+  }
+
   const mobTicker = document.getElementById('mobile-sound-live-sec');
   const mobBtn = document.getElementById('mobile-sound-text');
+  if (mobTicker) mobTicker.innerText = remainingSec;
+  if (mobBtn) mobBtn.innerText = 'Pause';
 
-  stopMusicTimers();
+  musicCountdownInterval = setInterval(() => {
+    remainingSec--;
+    const liveSecEl = document.getElementById('sound-live-sec');
+    const liveMobSecEl = document.getElementById('mobile-sound-live-sec');
+    if (liveSecEl && remainingSec >= 0) liveSecEl.innerText = remainingSec;
+    if (liveMobSecEl && remainingSec >= 0) liveMobSecEl.innerText = remainingSec;
+  }, 1000);
 
-  if (bgAudio) {
-    bgAudio.pause();
-    bgAudio.volume = 1.0;
-  }
-
-  isPlayingAudio = false;
-  if (mobTicker) mobTicker.innerText = MUSIC_CONFIG.playDurationSec;
-  if (mobBtn) mobBtn.innerText = 'Play';
-
-  if (btn) {
-    btn.classList.remove('border-amber-400', 'bg-amber-500/30', 'ring-2', 'ring-amber-400/40');
-    btn.innerHTML = `
-      <i data-lucide="music" id="sound-icon" class="w-4 h-4 text-amber-400"></i>
-      <span id="sound-btn-text" class="font-semibold">Music (<span id="sound-duration-badge">${MUSIC_CONFIG.playDurationSec}</span>s)</span>
-    `;
-    if (window.lucide) lucide.createIcons();
-  }
-}
-
-function stopMusicTimers() {
-  if (musicTimer) { clearTimeout(musicTimer); musicTimer = null; }
-  if (musicCountdownInterval) { clearInterval(musicCountdownInterval); musicCountdownInterval = null; }
-  if (fadeOutInterval) { clearInterval(fadeOutInterval); fadeOutInterval = null; }
-}
-
-// Envelope Opening & Confetti
-function openEnvelope() {
-  const overlay = document.getElementById('envelope-overlay');
-  overlay.classList.add('opacity-0', 'scale-95', 'pointer-events-none');
-  
-  // Confetti Blast
-  celebrateConfetti();
-
-  // Auto-play music immediately inside user gesture context for 100% Mobile Phone compatibility
-  if (MUSIC_CONFIG.autoPlayOnOpen) {
-    playConfiguredMusic();
-  }
-
+  // Smooth Fade-Out trigger
+  const bgAudio = document.getElementById('bg-audio');
+  const fadeStartTime = Math.max(0, (durationSec - MUSIC_CONFIG.fadeOutSec) * 1000);
   setTimeout(() => {
-    overlay.style.display = 'none';
-  }, 700);
+    if (!isPlayingAudio) return;
+    let currentVol = 1.0;
+    fadeOutInterval = setInterval(() => {
+      currentVol -= 0.1;
+      if (currentVol <= 0.05) {
+        if (bgAudio) bgAudio.volume = 0;
+        if (synthGain && webAudioCtx) {
+          try { synthGain.gain.setTargetAtTime(0, webAudioCtx.currentTime, 0.2); } catch(e){}
+        }
+        clearInterval(fadeOutInterval);
+      } else {
+        if (bgAudio) bgAudio.volume = currentVol;
+      }
+    }, 150);
+  }, fadeStartTime);
+
+  // Exact Auto-Stop Timer
+  musicTimer = setTimeout(() => {
+    stopMusic();
+  }, durationSec * 1000);
 }
+
+// Auspicious Festive Web Audio Synth Fallback (Ensures iPhone never stays silent)
+function playAuspiciousSynthMelody(durationSec) {
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    if (!webAudioCtx) webAudioCtx = new AudioCtx();
+    if (webAudioCtx.state === 'suspended') webAudioCtx.resume();
+
+    stopSynthMelody();
+
+    synthGain = webAudioCtx.createGain();
+    synthGain.gain.setValueAtTime(0.18, webAudioCtx.currentTime);
+    synthGain.connect(webAudioCtx.destination);
+
+    // Sacred celebration notes: Sa Re Ga Pa Dha Sa' (Bhoopali Raga / Auspicious Bell Harmony)
+    const notes = [
+      { f: 261.63, t: 0.0, d: 0.6 },  // Sa
+      { f: 293.66, t: 0.45, d: 0.6 }, // Re
+      { f: 329.63, t: 0.9, d: 0.7 },  // Ga
+      { f: 392.00, t: 1.45, d: 0.8 }, // Pa
+      { f: 440.00, t: 2.1, d: 0.9 },  // Dha
+      { f: 523.25, t: 2.8, d: 1.5 },  // Sa' (High)
+      { f: 440.00, t: 4.0, d: 0.6 },
+      { f: 392.00, t: 4.5, d: 0.7 },
+      { f: 329.63, t: 5.1, d: 0.8 },
+      { f: 293.66, t: 5.8, d: 0.8 },
+      { f: 261.63, t: 6.5, d: 1.8 },
+      { f: 329.63, t: 8.0, d: 0.7 },
+      { f: 392.00, t: 8.6, d: 0.7 },
+      { f: 523.25, t: 9.3, d: 2.2 },
+      { f: 659.25, t: 11.2, d: 2.8 }
+    ];
+
+    const now = webAudioCtx.currentTime;
+    notes.forEach(n => {
+      if (n.t >= durationSec) return;
+      const osc = webAudioCtx.createOscillator();
+      const noteGain = webAudioCtx.createGain();
+
+      osc.type = 'triangle'; // Warm festive chime tone
+      osc.frequency.setValueAtTime(n.f, now + n.t);
+
+      noteGain.gain.setValueAtTime(0.0001, now + n.t);
+      noteGain.gain.exponentialRampToValueAtTime(0.35, now + n.t + 0.05);
+      noteGain.gain.exponentialRampToValueAtTime(0.0001, now + n.t + n.d);
+
+      osc.connect(noteGain);
+      noteGain.connect(synthGain);
+
+      osc.start(now + n.t);
+      osc.stop(now + n.t + n.d + 0.1);
+      synthOscillators.push(osc);
+    });
+
+    isPlayingAudio = true;
+    startMusicPlaybackUI(durationSec);
+
+  } catch(e) {
+    console.warn("Synth melody fallback:", e);
+  }
+}
+
+function stopSynthMelody() {
+  if (synthOscillators.length > 0) {
+    synthOscillators.forEach(osc => {
+      try { osc.stop(); osc.disconnect(); } catch(e){}
+    });
+    synthOscillators = [];
+  }
+  if (synthGain && webAudioCtx) {
+    try {
+      synthGain.gain.setTargetAtTime(0, webAudioCtx.currentTime, 0.1);
+    } catch(e){}
+  }
+}
+
+
 
 function celebrateConfetti() {
   if (typeof confetti === 'function') {
